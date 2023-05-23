@@ -157,7 +157,7 @@ namespace Inworld.Model
             InworldController.Instance.OnCharacterChanged += OnCharacterChanged;
             InworldController.Instance.OnStateChanged += OnStatusChanged;
             InworldController.Instance.OnPacketReceived += OnPacketEvents;
-            Animator.enabled = false;
+           // Animator.enabled = false;
             if (!Character)
                 return;
             Character.OnBeginSpeaking.AddListener(OnAudioStarted);
@@ -171,7 +171,7 @@ namespace Inworld.Model
                 InworldController.Instance.OnStateChanged -= OnStatusChanged;
                 InworldController.Instance.OnPacketReceived -= OnPacketEvents;
             }
-            Animator.enabled = false;
+           // Animator.enabled = false;
             if (!Character)
                 return;
             Character.OnBeginSpeaking.RemoveListener(OnAudioStarted);
@@ -185,11 +185,11 @@ namespace Inworld.Model
             if (oldCharacter == Character)
             {
                 HandleMainStatus(AnimMainStatus.Goodbye);
-                Animator.enabled = false;
+               // Animator.enabled = false;
             }
             else if (newCharacter == Character)
             {
-                Animator.enabled = true;
+               // Animator.enabled = true;
                 HandleMainStatus(AnimMainStatus.Hello);
             }
         }

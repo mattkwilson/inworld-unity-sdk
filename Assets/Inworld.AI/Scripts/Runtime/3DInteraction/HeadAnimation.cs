@@ -100,6 +100,10 @@ namespace Inworld.Model
         }
         #endregion
 
+        public void LookAtPlayer() {
+            m_trLookAt = InworldController.Player.transform;
+        }
+
         #region Private Functions
         void _StartLookAt(Vector3 lookPos)
         {

@@ -185,7 +185,7 @@ namespace Inworld
                 if (m_logUtterances && !string.IsNullOrEmpty(text))
                     InworldAI.Log($"{character}: {text}");
             });
-            if (InworldAI.Settings.AutoSelectCharacter)
+            // if (InworldAI.Settings.AutoSelectCharacter)
                 StartCoroutine(CheckPriority());
         }
         void OnDrawGizmosSelected()

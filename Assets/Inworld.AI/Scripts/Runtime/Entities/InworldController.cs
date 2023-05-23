@@ -117,13 +117,13 @@ namespace Inworld
         public InworldCharacter CurrentCharacter
         {
             get => m_CurrentCharacter;
-            private set
+            set
             {
                 if (m_CurrentCharacter == value)
                     return;
                 m_LastCharacter = m_CurrentCharacter;
                 m_CurrentCharacter = value;
-                StartCoroutine(SwitchAudioCapture());
+                // StartCoroutine(SwitchAudioCapture());
                 OnCharacterChanged?.Invoke(m_LastCharacter, m_CurrentCharacter);
             }
         }
@@ -312,8 +312,8 @@ namespace Inworld
             while (State == ControllerStates.Connected)
             {
                 _GetIncomingEvents();
-                if (InworldAI.Settings.AutoSelectCharacter)
-                    _SelectCharacter();
+                // if (InworldAI.Settings.AutoSelectCharacter)
+                //     _SelectCharacter();
                 // Client stopped.
                 if (!m_Client.SessionStarted && !m_Client.Errors.IsEmpty)
                 {
