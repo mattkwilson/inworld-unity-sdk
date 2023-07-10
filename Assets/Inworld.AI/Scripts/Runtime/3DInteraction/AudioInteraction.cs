@@ -103,14 +103,14 @@ namespace Inworld.Audio
         #region Callbacks
         void OnCharacterChanged(InworldCharacter oldChar, InworldCharacter newChar)
         {
-            if (oldChar == Character && newChar != Character)
-            {
-                StartCoroutine(FadeOut());
-            }
-            if (newChar == Character && oldChar != Character)
-            {
-                FadeIn();
-            }
+            // if (oldChar == Character && newChar != Character)
+            // {
+            //     StartCoroutine(FadeOut());
+            // }
+            // if (newChar == Character && oldChar != Character)
+            // {
+            //     FadeIn();
+            // }
             
         }
         void FadeIn()

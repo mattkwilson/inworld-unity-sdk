@@ -190,8 +190,8 @@ namespace Inworld.Model
         }
         public bool Init()
         {
-            Animator ??= GetComponent<Animator>();
-            Character ??= GetComponent<InworldCharacter>();
+            Animator ??= GetComponentInChildren<Animator>();
+            Character ??= GetComponentInParent<InworldCharacter>();
             m_Skin ??= Character.GetComponentInChildren<SkinnedMeshRenderer>();
             m_CharacterChatPanel ??= Character.GetComponentInChildren<ChatPanel3D>();
             return Animator && Character;

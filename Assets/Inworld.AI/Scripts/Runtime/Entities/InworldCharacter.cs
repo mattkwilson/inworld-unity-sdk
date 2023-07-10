@@ -24,10 +24,13 @@ namespace Inworld
         [Header("Animation")]
         [SerializeField] GameObject m_CurrentAvatar;
         [Header("Sight")]
+        public int SpeakerPriority;
         [Range(1, 180)]
         [SerializeField] float m_SightAngle = 90f;
+        public float SightAngle {get {return m_SightAngle;}}
         [Range(1, 30)]
         [SerializeField] float m_SightDistance = 10f;
+        public float SightDistance {get {return m_SightDistance;}}
         [SerializeField] float m_SightRefreshRate = 0.25f;
         [Header("Log")]
         [SerializeField] bool m_logUtterances;
@@ -167,6 +170,7 @@ namespace Inworld
             if (!InworldController.Characters.Contains(this))
                 InworldController.Characters.Add(this);
         }
+
         void OnEnable()
         {
             InworldController.Instance.OnStateChanged += OnStatusChanged;
@@ -374,13 +378,15 @@ namespace Inworld
         ///     You could send either whole string from CharacterData.trigger, or the trigger's shortName.
         /// </param>
         /// <param name="param">A Dictionary with its param name, and its value.</param>
-        public void SendTrigger(string triggerName, Dictionary<string, string> param = null)
+        public PacketId SendTrigger(string triggerName, Dictionary<string, string> param = null)
         {
             string[] trigger = triggerName.Split("triggers/");
             CustomEvent evt = trigger.Length == 2 ? new CustomEvent(trigger[1]) : new CustomEvent(triggerName);
             if (param != null)
                 evt.Parameters = param;
+
             SendEventToAgent(evt);
+            return evt.PacketId;
         }
         /// <summary>
         ///     Send general events to this Character.

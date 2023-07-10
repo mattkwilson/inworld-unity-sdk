@@ -114,7 +114,7 @@ namespace Inworld
         }
         internal void GetAppAuth(string sessionToken)
         {
-#if UNITY_EDITOR && VSP
+#if UNITY_EDITOR
             if (!string.IsNullOrEmpty(InworldAI.User.Account))
                 VSAttribution.VSAttribution.SendAttributionEvent("Login Runtime", InworldAI.k_CompanyName, InworldAI.User.Account);
 #endif
@@ -161,6 +161,7 @@ namespace Inworld
             }
             catch (RpcException e)
             {
+                Debug.Log("Load Scene Failed: " + e.ToString());
                 RuntimeEvent?.Invoke(RuntimeStatus.LoadSceneFailed, e.ToString());
                 return null;
             }
