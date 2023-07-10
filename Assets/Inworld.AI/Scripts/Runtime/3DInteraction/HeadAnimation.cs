@@ -7,11 +7,11 @@
 using Inworld.Packets;
 using Inworld.Sample.UI;
 using Inworld.Util;
+using System;
 using System.Collections;
 using System.Linq;
 using UnityEngine;
 using EmotionEvent = Inworld.Grpc.EmotionEvent;
-using GestureEvent = Inworld.Grpc.GestureEvent;
 namespace Inworld.Model
 {
     /// <summary>
@@ -52,6 +52,7 @@ namespace Inworld.Model
         Vector3 m_vecInitEuler;
         SkinnedMeshRenderer m_Skin;
         FacialAnimation m_LastFacial;
+        FacialAnimation m_CurrentFacial;
         ChatPanel3D m_CharacterChatPanel;
         float m_LookAtWeight;
         #endregion
@@ -134,9 +135,6 @@ namespace Inworld.Model
                 case Packets.EmotionEvent emotionEvent:
                     HandleEmotion(emotionEvent.SpaffCode);
                     break;
-                case Packets.GestureEvent gestureEvent:
-                    HandleGesture(gestureEvent.Simple);
-                    break;
             }
         }
         public void HandleEmotion(EmotionEvent.Types.SpaffCode spaffCode)
@@ -179,10 +177,6 @@ namespace Inworld.Model
                     break;
             }
         }
-        public void HandleGesture(GestureEvent.Types.Type gesture)
-        {
-            //Implement your own logic here.
-        }
         public void SetupHeadMovement(GameObject avatar)
         {
             InworldAI.Log($"If you want to integrate detailed head/eye movent,\nplease Load {m_HeadEyeAsset} as Text,\nthen use`Realistic Eye Movements` to load it from json");
@@ -199,15 +193,30 @@ namespace Inworld.Model
         void _ProcessEmotion(string emotion)
         {
             FacialAnimation targetEmo = m_FaceData.emotions.FirstOrDefault(emo => emo.emotion == emotion);
-            if (targetEmo != null && m_LastFacial != targetEmo)
+            if (targetEmo != null && m_CurrentFacial != targetEmo)
             {
-                StartCoroutine(_MorphTo(targetEmo));
+                _ResetLastEmo(m_LastFacial);
+                m_LastFacial = m_CurrentFacial;
+                m_CurrentFacial = targetEmo;
+                if (m_CharacterChatPanel)
+                    m_CharacterChatPanel.ProcessEmotion(targetEmo);
+                StartCoroutine(_MorphFacial());
             }
         }
-        IEnumerator _MorphTo(FacialAnimation emo)
+        void _ResetLastEmo(FacialAnimation emo)
         {
-            if (m_CharacterChatPanel)
-                m_CharacterChatPanel.ProcessEmotion(emo);
+            if (!m_Skin || emo == null)
+                return;
+            for (int i = 0; i < m_Skin.sharedMesh.blendShapeCount; i++)
+            {
+                string currIterName = m_Skin.sharedMesh.GetBlendShapeName(i);
+                MorphState lastState = emo.morphStates.FirstOrDefault(morph => morph.morphName == currIterName);
+                if (lastState != null)
+                    m_Skin.SetBlendShapeWeight(i, 0);
+            }
+        }
+        IEnumerator _MorphFacial()
+        {
             if (!m_Skin)
                 yield break;
             float morphTime = 0;
@@ -218,7 +227,7 @@ namespace Inworld.Model
                     string currIterName = m_Skin.sharedMesh.GetBlendShapeName(i);
                     float fCurrShapeWeight = m_Skin.GetBlendShapeWeight(i);
                     MorphState lastState = m_LastFacial?.morphStates.FirstOrDefault(morph => morph.morphName == currIterName);
-                    MorphState currState = emo.morphStates.FirstOrDefault(morph => morph.morphName == currIterName);
+                    MorphState currState = m_CurrentFacial?.morphStates.FirstOrDefault(morph => morph.morphName == currIterName);
                     // 1. Reset Old
                     if (lastState != null && currState == null)
                         m_Skin.SetBlendShapeWeight(i, Mathf.Lerp(fCurrShapeWeight, 0, 0.15f));
@@ -229,7 +238,6 @@ namespace Inworld.Model
                 morphTime += Time.fixedDeltaTime;
                 yield return new WaitForFixedUpdate();
             }
-            m_LastFacial = emo;
         }
         #endregion
     }

@@ -51,12 +51,12 @@ namespace Inworld.Audio
             base.Clear();
             OnChatHistoryListChanged();
         }
-        public override void AddText(TextEvent textEvent)
+        public override void AddText(InworldPacket textEvent)
         {
             CancelResponsesEvent cancel = _AddText(textEvent);
             if (cancel == null)
                 return;
-            // Stoping playback if current interaction is stopped.
+            // Stop playback if current interaction is stopped.
             if (m_CurrentlyPlayingUtterance != null &&
                 IsInteractionCanceled(m_CurrentlyPlayingUtterance.InteractionId))
             {
@@ -91,8 +91,9 @@ namespace Inworld.Audio
         }
         void OnDisable()
         {
-            if (InworldController.Instance)
-                InworldController.Instance.OnPacketReceived -= OnPacketEvents;
+            if (!InworldController.Instance)
+                return;
+            InworldController.Instance.OnPacketReceived -= OnPacketEvents;
             if (!Character)
                 return;
             InworldController.Instance.OnCharacterChanged -= OnCharacterChanged;
@@ -181,7 +182,14 @@ namespace Inworld.Audio
             if (m_CurrentFixedUpdateTime <= k_FixedUpdatePeriod)
                 return;
             m_CurrentFixedUpdateTime = 0f;
-            if (IsPlaying || !m_AudioChunksQueue.TryDequeue(out m_CurrentAudioChunk) || !IsAudioChunkAvailable(m_CurrentAudioChunk.PacketId))
+            if (IsPlaying)
+                return;
+            if (!m_AudioChunksQueue.TryDequeue(out m_CurrentAudioChunk))
+            {
+                Character.IsSpeaking = false;
+                return;
+            }
+            if (!IsAudioChunkAvailable(m_CurrentAudioChunk.PacketId))
                 return;
             if (InworldController.Instance.CurrentCharacter != Character)
                 return;

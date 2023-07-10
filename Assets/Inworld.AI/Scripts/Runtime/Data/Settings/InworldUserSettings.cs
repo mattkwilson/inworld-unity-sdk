@@ -22,6 +22,8 @@ namespace Inworld.Util
         #region Inspector Variables
         [SerializeField] string m_UserName;
         [SerializeField] string m_OrganizationID;
+        [Space(10)]
+        [SerializeField] List<InworldPlayerProfile> m_AdditionalPlayerData;
         #endregion
 
         #region Private Variables
@@ -55,8 +57,12 @@ namespace Inworld.Util
             {
                 m_Header ??= new Metadata
                 {
-                    {"X-Authorization-Bearer-Type", "inworld"},
-                    {"Authorization", $"Bearer {m_InworldToken}"}
+                    {
+                        "X-Authorization-Bearer-Type", "inworld"
+                    },
+                    {
+                        "Authorization", $"Bearer {m_InworldToken}"
+                    }
                 };
                 return m_Header;
             }
@@ -102,7 +108,10 @@ namespace Inworld.Util
                 string[] splits = m_InworldAccount.Split('/');
                 string inworldAccount = splits.Length > 1 ? splits[1] : splits[0];
                 splits = inworldAccount.Split('-');
-                int[] LengthList = {8, 4, 4, 4, 12};
+                int[] LengthList =
+                {
+                    8, 4, 4, 4, 12
+                };
                 if (splits.Length != LengthList.Length)
                     return false;
                 if (splits.Where((t, i) => t.Length != LengthList[i]).Any())
@@ -152,7 +161,23 @@ namespace Inworld.Util
         /// </summary>
         public ClientRequest Client => new ClientRequest
         {
-            Id = "unity"
+            Id = "unity",
+            Version = Application.version
+        };
+        /// <summary>
+        ///     Send the key-value pair of your customized global user settings to Inworld Server.
+        ///     These data could be set at Inworld User Settings.
+        /// </summary>
+        public UserSettings Settings => new UserSettings
+        {
+            ViewTranscriptConsent = true,
+            PlayerProfile = new UserSettings.Types.PlayerProfile
+            {
+                Fields =
+                {
+                    m_AdditionalPlayerData.Select(profile => profile.ToGrpc)
+                }
+            }
         };
         #endregion
 
@@ -212,8 +237,12 @@ namespace Inworld.Util
             m_InworldToken = inworldToken;
             m_Header = new Metadata
             {
-                {"X-Authorization-Bearer-Type", "inworld"},
-                {"Authorization", $"Bearer {m_InworldToken}"}
+                {
+                    "X-Authorization-Bearer-Type", "inworld"
+                },
+                {
+                    "Authorization", $"Bearer {m_InworldToken}"
+                }
             };
             m_ExpirationTime = expireTime.Ticks;
             InworldAI.Log($"Token Refreshed. Next Expiration: {expireTime}");

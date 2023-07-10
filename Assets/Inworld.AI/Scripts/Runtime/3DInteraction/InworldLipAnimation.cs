@@ -7,6 +7,7 @@
 using Inworld.Audio;
 using Inworld.Grpc;
 using System.Collections.Concurrent;
+using Inworld.Util;
 using System.Linq;
 using UnityEngine;
 namespace Inworld.Model
@@ -99,6 +100,8 @@ namespace Inworld.Model
             // 1. Move Out-dated Viseme to Last Viseme.
             if (m_PassedTime >= m_CurrViseme.y)
             {
+                if (m_LastViseme != Vector2.zero)
+                    m_Skin.SetBlendShapeWeight(m_VisemeIndex + (int)m_LastViseme.x, 0);
                 m_LastViseme = m_CurrViseme;
                 m_CurrViseme = Vector2.zero;
             }

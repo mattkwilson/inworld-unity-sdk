@@ -14,15 +14,13 @@ using Inworld.Util;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
-using System.Text;
 using System.Threading.Tasks;
-using UnityEditor;
-using UnityEngine;
+
 using AudioChunk = Inworld.Packets.AudioChunk;
+using ActionEvent = Inworld.Packets.ActionEvent;
 using ControlEvent = Inworld.Grpc.ControlEvent;
 using CustomEvent = Inworld.Packets.CustomEvent;
 using EmotionEvent = Inworld.Packets.EmotionEvent;
-using GestureEvent = Inworld.Packets.GestureEvent;
 using GrpcPacket = Inworld.Grpc.InworldPacket;
 using InworldPacket = Inworld.Packets.InworldPacket;
 using Routing = Inworld.Packets.Routing;
@@ -36,8 +34,6 @@ namespace Inworld
     /// </summary>
     class Connection
     {
-        // Animation Chunks.
-        internal readonly ConcurrentQueue<AnimationChunk> incomingAnimationQueue = new ConcurrentQueue<AnimationChunk>();
         // Audio chunks ready to play.
         internal readonly ConcurrentQueue<AudioChunk> incomingAudioQueue = new ConcurrentQueue<AudioChunk>();
         // Events that need to be processed by NPC.
@@ -71,28 +67,10 @@ namespace Inworld
         internal ConcurrentQueue<Exception> Errors { get; } = new ConcurrentQueue<Exception>();
         internal bool SessionStarted { get; private set; }
         internal bool HasInit => !m_InworldAuth.IsExpired;
-        internal string SessionID => m_InworldAuth?.SessionID ?? "";
+        internal string SessionID => m_InworldAuth?.Token.SessionId ?? "";
         internal string LastState { get; set; }
         bool IsSessionInitialized => m_SessionKey.Length != 0;
         Timestamp Now => Timestamp.FromDateTime(DateTime.UtcNow);
-        #endregion
-
-        #region Call backs
-        void OnAuthCompleted()
-        {
-            InworldAI.Log("Init Success!");
-            m_Header = new Metadata
-            {
-                {"authorization", $"Bearer {m_InworldAuth.Token}"},
-                {"session-id", m_InworldAuth.SessionID}
-            };
-            RuntimeEvent?.Invoke(RuntimeStatus.InitSuccess, "");
-        }
-
-        void OnAuthFailed(string msg)
-        {
-            RuntimeEvent?.Invoke(RuntimeStatus.InitFailed, msg);
-        }
         #endregion
 
         #region Private Functions
@@ -112,15 +90,46 @@ namespace Inworld
             else
                 RuntimeEvent?.Invoke(RuntimeStatus.InitFailed, "Token Invalid");
         }
-        internal void GetAppAuth(string sessionToken)
+        internal void GetAppAuth(string key, string secret, string sessionToken = "")
         {
 #if UNITY_EDITOR
             if (!string.IsNullOrEmpty(InworldAI.User.Account))
                 VSAttribution.VSAttribution.SendAttributionEvent("Login Runtime", InworldAI.k_CompanyName, InworldAI.User.Account);
 #endif
-            m_InworldAuth = new InworldAuth(OnAuthCompleted, OnAuthFailed);
+            m_InworldAuth = new InworldAuth();
             if (string.IsNullOrEmpty(sessionToken))
-                m_InworldAuth.GenerateAccessToken(InworldAI.Game.StudioServer, InworldAI.Game.APIKey, InworldAI.Game.APISecret);
+            {
+                GenerateTokenRequest gtRequest = new GenerateTokenRequest
+                {
+                    Key = key,
+                    Resources =
+                    {
+                        InworldAI.Game.currentWorkspace.fullName
+                    }
+                    
+                };
+                Metadata metadata = new Metadata
+                {
+                    {
+                        "authorization", m_InworldAuth.GetHeader(InworldAI.Game.RuntimeServer, key, secret)
+                    }
+                };
+                try
+                {
+                    m_InworldAuth.Token = m_WorldEngineClient.GenerateToken(gtRequest, metadata, DateTime.UtcNow.AddHours(1));
+                    InworldAI.Log("Init Success!");
+                    m_Header = new Metadata
+                    {
+                        {"authorization", $"Bearer {m_InworldAuth.Token.Token}"},
+                        {"session-id", m_InworldAuth.Token.SessionId}
+                    };
+                    RuntimeEvent?.Invoke(RuntimeStatus.InitSuccess, "");
+                }
+                catch (RpcException e)
+                {
+                    RuntimeEvent?.Invoke(RuntimeStatus.InitFailed, e.ToString());
+                }
+            }
             else
             {
                 _ReceiveCustomToken(sessionToken);
@@ -134,7 +143,8 @@ namespace Inworld
                 Name = sceneName,
                 Capabilities = InworldAI.Settings.Capabilities,
                 User = InworldAI.User.Request,
-                Client = InworldAI.User.Client
+                Client = InworldAI.User.Client,
+                UserSettings = InworldAI.User.Settings
             };
             if (!string.IsNullOrEmpty(LastState))
             {
@@ -214,15 +224,6 @@ namespace Inworld
             if (m_CurrentConnection != null)
             {
                 return m_CurrentConnection.incomingAudioQueue.TryDequeue(out chunk);
-            }
-            chunk = null;
-            return false;
-        }
-        internal bool GetAnimationChunk(out AnimationChunk chunk)
-        {
-            if (m_CurrentConnection != null)
-            {
-                return m_CurrentConnection.incomingAnimationQueue.TryDequeue(out chunk);
             }
             chunk = null;
             return false;
@@ -337,9 +338,6 @@ namespace Inworld
                     case DataChunk.Types.DataType.Audio:
                         m_CurrentConnection.incomingAudioQueue.Enqueue(new AudioChunk(response));
                         break;
-                    case DataChunk.Types.DataType.Animation:
-                        m_CurrentConnection.incomingAnimationQueue.Enqueue(new AnimationChunk(response));
-                        break;
                     case DataChunk.Types.DataType.State:
                         StateChunk stateChunk = new StateChunk(response);
                         LastState = stateChunk.Chunk.ToBase64();
@@ -353,10 +351,6 @@ namespace Inworld
             {
                 m_CurrentConnection.incomingInteractionsQueue.Enqueue(new TextEvent(response));
             }
-            else if (response.Gesture != null)
-            {
-                m_CurrentConnection.incomingInteractionsQueue.Enqueue(new GestureEvent(response));
-            }
             else if (response.Control != null)
             {
                 m_CurrentConnection.incomingInteractionsQueue.Enqueue(new Packets.ControlEvent(response));
@@ -364,6 +358,10 @@ namespace Inworld
             else if (response.Emotion != null)
             {
                 m_CurrentConnection.incomingInteractionsQueue.Enqueue(new EmotionEvent(response));
+            }
+            else if (response.Action != null)
+            {
+                m_CurrentConnection.incomingInteractionsQueue.Enqueue(new ActionEvent(response));
             }
             else if (response.Custom != null)
             {

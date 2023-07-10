@@ -123,7 +123,8 @@ namespace Inworld
                     return;
                 m_LastCharacter = m_CurrentCharacter;
                 m_CurrentCharacter = value;
-                // StartCoroutine(SwitchAudioCapture());
+                // if (enabled)
+                //     StartCoroutine(SwitchAudioCapture());
                 OnCharacterChanged?.Invoke(m_LastCharacter, m_CurrentCharacter);
             }
         }
@@ -277,8 +278,6 @@ namespace Inworld
             }
             return strResult;
         }
-
-
         void _ListCharactersFromServer(List<LoadSceneResponse.Types.Agent> characters)
         {
             foreach (LoadSceneResponse.Types.Agent characterInfo in characters)
@@ -299,10 +298,6 @@ namespace Inworld
             if (m_Client.GetAudioChunk(out AudioChunk audioChunkEvent))
             {
                 OnPacketReceived?.Invoke(audioChunkEvent);
-            }
-            if (m_Client.GetAnimationChunk(out AnimationChunk animChunkEvent))
-            {
-                OnPacketReceived?.Invoke(animChunkEvent);
             }
         }
 
@@ -406,7 +401,18 @@ namespace Inworld
         {
             State = ControllerStates.Initializing;
             m_Client.RuntimeEvent += OnRuntimeEvents;
-            m_Client.GetAppAuth(sessionToken);
+            m_Client.GetAppAuth(InworldAI.Game.APIKey, InworldAI.Game.APISecret, sessionToken);
+        }
+        /// <summary>
+        ///     Initialize the SDK.
+        ///     Make sure there's a valid ServerConfig (Has URI of both RuntimeServer and StudioServer)
+        ///     and a valid pair of valid API Key/Secret
+        /// </summary>
+        public void InitWithCustomKey(string key, string secret)
+        {
+            State = ControllerStates.Initializing;
+            m_Client.RuntimeEvent += OnRuntimeEvents;
+            m_Client.GetAppAuth(key, secret);
         }
         /// <summary>
         /// Start Recording

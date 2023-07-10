@@ -111,10 +111,10 @@ namespace Inworld.Util
         /// </summary>
         public CapabilitiesRequest Capabilities => new CapabilitiesRequest
         {
-            Animations = true,
             Audio = m_CanReceiveAudio,
+            NarratedActions = true,
             Emotions = true,
-            Gestures = true,
+            Relations = true,
             Interruptions = true,
             Text = true,
             Triggers = true,

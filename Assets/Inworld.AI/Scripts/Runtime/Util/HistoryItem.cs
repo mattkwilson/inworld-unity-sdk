@@ -5,19 +5,19 @@
 * that can be found in the LICENSE.md file or at https://www.inworld.ai/sdk-license
 *************************************************************************************************/
 using Inworld.Packets;
-namespace Inworld
+namespace Inworld.Util
 {
     /// <summary>
     ///     History Item is the data class receiving from server.
     /// </summary>
     public class HistoryItem
     {
-        public TextEvent Event;
+        public InworldPacket Event;
         /**
          * If this is final response utterance in interaction.
          */
         public bool Final;
-        public HistoryItem(TextEvent textEvent)
+        public HistoryItem(InworldPacket textEvent)
         {
             Event = textEvent;
         }
