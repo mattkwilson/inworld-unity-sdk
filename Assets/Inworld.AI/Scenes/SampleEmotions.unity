@@ -11575,6 +11575,9 @@ MonoBehaviour:
   OnGoalCompleted:
     m_PersistentCalls:
       m_Calls: []
+  OnRelationUpdated:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!222 &4719297120864292418
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -11823,7 +11826,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_HeadEyeAsset: Animations/REMRPM
-  m_FaceData: {fileID: 11400000, guid: 0e4837ff3c714034a885f361813776b2, type: 2}
+  m_FaceData: {fileID: 11400000, guid: edb24d64e082fca4e9cee7bfb2dea201, type: 2}
   m_MorphTime: 0.5
 --- !u!114 &5850455540637172237
 MonoBehaviour:
@@ -12000,7 +12003,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63e95357b25840de8fa9d691b441b3c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_FaceAnimData: {fileID: 11400000, guid: 0e4837ff3c714034a885f361813776b2, type: 2}
+  m_FaceAnimData: {fileID: 11400000, guid: b61df023e951cfe4b8bff36df3d9c143, type: 2}
   m_LipExpression: 0.7
   m_VisemeSil: viseme_sil
   m_CustomModel: 0
@@ -12018,6 +12021,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_PanelAnchor: {fileID: 4248716695215182295}
   m_Owner: {fileID: 4642585709870239993}
+  m_Relation: {fileID: 0}
   m_LeftBubble: {fileID: 7971556930050456051, guid: 6e31716df34c4f04a8a382ad03c5790d, type: 3}
   m_RightBubble: {fileID: 5963488648060241214, guid: ce19183024b657340b5e830b1549618e, type: 3}
   m_Dots: {fileID: 3863898828670446839}

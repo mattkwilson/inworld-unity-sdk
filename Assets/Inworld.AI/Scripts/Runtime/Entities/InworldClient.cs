@@ -16,7 +16,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using UnityEngine;
-
 using AudioChunk = Inworld.Packets.AudioChunk;
 using ActionEvent = Inworld.Packets.ActionEvent;
 using ControlEvent = Inworld.Grpc.ControlEvent;
@@ -137,6 +136,7 @@ namespace Inworld
                 _ReceiveCustomToken(sessionToken);
             }
         }
+
         internal async Task<LoadSceneResponse> LoadScene(string sceneName)
         {
 
@@ -375,6 +375,10 @@ namespace Inworld
             else if (response.Custom != null)
             {
                 m_CurrentConnection.incomingInteractionsQueue.Enqueue(new CustomEvent(response));
+            }
+            else if (response.DebugInfo != null && response.DebugInfo.InfoCase == DebugInfoEvent.InfoOneofCase.Relation)
+            {
+                m_CurrentConnection.incomingInteractionsQueue.Enqueue(new RelationEvent(response));
             }
             else
             {

@@ -110,4 +110,14 @@ namespace Inworld.Util
         Happy = 3,
         Sad = 4
     }
+    public enum FacialEmotion
+    {
+        Neutral = 0,
+        Affection = 1,
+        Angry = 2,
+        Humor = 3,
+        Fear = 4,
+        Sad = 5,
+        Joy = 6
+    }
 }

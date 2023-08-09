@@ -258,11 +258,8 @@ namespace Inworld
        }
         void _StartAudioCapture(string characterID)
         {
-            if(m_CurrentRecordingID == characterID) {
-                Debug.LogWarning("Audio Capture already started for: " + characterID);
+            if (m_CurrentRecordingID == characterID)
                 return;
-            }
-
             m_CurrentRecordingID = characterID;
             m_Client.StartAudio(Routing.FromPlayerToAgent(characterID));
             // m_Capture.StartRecording(); 
@@ -394,6 +391,8 @@ namespace Inworld
         }
         internal void TTSEnd(string ID)
         {
+            if (string.IsNullOrEmpty(m_TTSInteractionID))
+                return;
             ControlEvent controlEvent = new ControlEvent(Grpc.ControlEvent.Types.Action.TtsPlaybackEnd, Routing.FromAgentToPlayer(ID));
             controlEvent.PacketId.InteractionId = m_TTSInteractionID;
             SendEvent(controlEvent);
@@ -417,6 +416,17 @@ namespace Inworld
         ///     Make sure there's a valid ServerConfig (Has URI of both RuntimeServer and StudioServer)
         ///     and a valid pair of valid API Key/Secret
         /// </summary>
+        public void InitWithCustomKey(string base64)
+        {
+            byte[] bytes = Convert.FromBase64String(base64);
+            string decoded = System.Text.Encoding.UTF8.GetString(bytes);
+            string[] result = decoded.Split(':');
+            if (result.Length <= 1)
+                return;
+            State = ControllerStates.Initializing;
+            m_Client.RuntimeEvent += OnRuntimeEvents;
+            m_Client.GetAppAuth(result[0], result[1]);
+        }
         public void InitWithCustomKey(string key, string secret)
         {
             State = ControllerStates.Initializing;
@@ -456,17 +466,6 @@ namespace Inworld
             capture.PushAudio();
         }
 
-        public void BlockAudioTransfer() {
-            m_Client.BlockAudioTransfer = true;
-        }
-
-        public void UnBlockAudioTransfer() {
-            m_Client.BlockAudioTransfer = false;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         public async Task LoadScene(string sceneOrCharFullName = "")
         {
             string fullNameToLoad = _GetFullNameToLoad(sceneOrCharFullName);

@@ -5,6 +5,7 @@
 * that can be found in the LICENSE.md file or at https://www.inworld.ai/sdk-license
 *************************************************************************************************/
 using Inworld.Grpc;
+using System;
 using UnityEngine;
 namespace Inworld.Util
 {
@@ -117,7 +118,10 @@ namespace Inworld.Util
             Relations = true,
             Interruptions = true,
             Text = true,
-            Triggers = true,
+            DebugInfo = true,
+#pragma warning disable CS0612
+            Triggers = true, // YAN: Although it's called obsolete, we cannot remove this settings now. Need feedback from backend.
+#pragma warning restore CS0612
             Continuation = m_SaveConversation,
             TurnBasedStt = !m_Interruptible,
             PhonemeInfo = true
