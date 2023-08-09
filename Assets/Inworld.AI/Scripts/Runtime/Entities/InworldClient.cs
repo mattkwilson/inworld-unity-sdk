@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using UnityEngine;
 
 using AudioChunk = Inworld.Packets.AudioChunk;
 using ActionEvent = Inworld.Packets.ActionEvent;
@@ -69,6 +70,7 @@ namespace Inworld
         internal bool HasInit => !m_InworldAuth.IsExpired;
         internal string SessionID => m_InworldAuth?.Token.SessionId ?? "";
         internal string LastState { get; set; }
+        internal bool BlockAudioTransfer { get; set; }
         bool IsSessionInitialized => m_SessionKey.Length != 0;
         Timestamp Now => Timestamp.FromDateTime(DateTime.UtcNow);
         #endregion
@@ -218,6 +220,7 @@ namespace Inworld
         {
             if (SessionStarted)
                 m_CurrentConnection?.outgoingEventsQueue.Enqueue(audioEvent.ToGrpc());
+            // Debug.Log("Adding audio chunk to queue: " + audioEvent.PacketId.InteractionId);
         }
         internal bool GetAudioChunk(out AudioChunk chunk)
         {
@@ -307,6 +310,12 @@ namespace Inworld
                                 {
                                     if (SessionStarted)
                                     {
+                                        // if(e.DataChunk.Type == DataChunk.Types.DataType.Audio) { // BlockAudioTransfer && 
+                                        //     // connection.outgoingEventsQueue.Enqueue(e);
+                                        //     // continue;
+                                        //     Debug.Log("Sending Audio Chunk: " + e.PacketId.InteractionId);
+                                        // }
+                                        
                                         await m_StreamingCall.RequestStream.WriteAsync(e);
                                     }
                                 }

@@ -17,7 +17,7 @@ namespace Inworld
     /// YAN: This is a global Audio Capture controller.
     ///      For each separate InworldCharacter, we use class AudioInteraction to handle audio clips.
     /// </summary>
-    public class AudioCapture : MonoBehaviour
+    public class AudioCapture : SingletonBehavior<AudioCapture>
     {
         public UnityEvent OnRecordingStart;
         public UnityEvent OnRecordingEnd;
@@ -39,6 +39,7 @@ namespace Inworld
 
         public void StartRecording(bool autoPush = true)
         {
+            Debug.Log("Start Recording");
             if (!Microphone.IsRecording(null))
                 m_Recording = Microphone.Start(null, true, m_BufferSeconds, m_AudioRate);
             m_LastPosition = Microphone.GetPosition(null);
@@ -49,6 +50,7 @@ namespace Inworld
         }
         public void StopRecording()
         {
+            Debug.Log("Stop Recording");
             Microphone.End(null);
             m_AudioToPush.Clear();
             IsCapturing = false;
@@ -106,6 +108,7 @@ namespace Inworld
             {
                 InworldController.Instance.SendAudio(audioData);
             }
+            m_AudioToPush.Clear();
         }
     }
 }

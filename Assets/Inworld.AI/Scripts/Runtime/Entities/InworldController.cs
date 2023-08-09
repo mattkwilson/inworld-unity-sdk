@@ -123,8 +123,11 @@ namespace Inworld
                     return;
                 m_LastCharacter = m_CurrentCharacter;
                 m_CurrentCharacter = value;
-                // if (enabled)
-                //     StartCoroutine(SwitchAudioCapture());
+                if (enabled)
+                    StartCoroutine(SwitchAudioCapture());
+                // if(m_LastCharacter) {
+                //     EndAudioCapture(m_LastCharacter.ID);
+                // }
                 OnCharacterChanged?.Invoke(m_LastCharacter, m_CurrentCharacter);
             }
         }
@@ -189,7 +192,7 @@ namespace Inworld
             }
             if (State == ControllerStates.LostConnect)
             {
-                m_CurrentCountDown += Time.deltaTime;
+                m_CurrentCountDown += Time.unscaledDeltaTime;
                 if (m_CurrentCountDown > m_BackOffTime)
                 {
                     m_CurrentCountDown = 0;
@@ -255,9 +258,14 @@ namespace Inworld
        }
         void _StartAudioCapture(string characterID)
         {
+            if(m_CurrentRecordingID == characterID) {
+                Debug.LogWarning("Audio Capture already started for: " + characterID);
+                return;
+            }
+
             m_CurrentRecordingID = characterID;
             m_Client.StartAudio(Routing.FromPlayerToAgent(characterID));
-            m_Capture.StartRecording(); 
+            // m_Capture.StartRecording(); 
             InworldAI.Log("Capture started.");
         }
         string _GetFullNameToLoad(string fullNameToLoad)
@@ -314,7 +322,7 @@ namespace Inworld
                 {
                     while (m_Client.Errors.TryDequeue(out Exception exception))
                     {
-                        if (exception.Message.Contains("inactivity"))
+                        if (exception.Message.Contains("inactivity") || exception.Message.Contains("max_age"))
                         {
                             //YAN: Filter it.
                             m_BackOffTime = Random.Range(m_BackOffTime, m_BackOffTime * 2);
@@ -322,11 +330,12 @@ namespace Inworld
                             State = ControllerStates.LostConnect;
                             break;
                         }
+
                         InworldAI.LogException($"{m_Client.SessionID}: {exception.Message}");
                         State = ControllerStates.Error;
                     }
                 }
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSecondsRealtime(0.1f);
             }
         }
         void _StartSession()
@@ -446,6 +455,15 @@ namespace Inworld
                 return;
             capture.PushAudio();
         }
+
+        public void BlockAudioTransfer() {
+            m_Client.BlockAudioTransfer = true;
+        }
+
+        public void UnBlockAudioTransfer() {
+            m_Client.BlockAudioTransfer = false;
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -568,6 +586,7 @@ namespace Inworld
                     m_Capture.IsCapturing = false; 
                 m_CurrentRecordingID = null;
                 InworldAI.Log("Capture ended.");
+                Debug.Log("Ending Client Audio Capture for: " + characterID);
             }
         }
 

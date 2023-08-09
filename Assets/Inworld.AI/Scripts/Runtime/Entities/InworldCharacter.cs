@@ -67,6 +67,7 @@ namespace Inworld
         ///     Returns Unity Event of Interaction.
         /// </summary>
         public InteractionEvent InteractionEvent { get; } = new InteractionEvent();
+        
         public bool IsMute
         {
             get
@@ -406,5 +407,6 @@ namespace Inworld
             InworldController.Instance.SendEvent(packet);
         }
         #endregion
+
     }
 }

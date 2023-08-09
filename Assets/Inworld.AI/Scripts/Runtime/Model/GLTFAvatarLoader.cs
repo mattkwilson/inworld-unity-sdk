@@ -5,7 +5,7 @@
 * that can be found in the LICENSE.md file or at https://www.inworld.ai/sdk-license
 *************************************************************************************************/
 using Inworld.Audio;
-using Siccity.GLTFUtility;
+// using Siccity.GLTFUtility;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -17,7 +17,7 @@ namespace Inworld.Model.Sample
     ///     Default Avatar Loader.
     ///     Use GLTFUtility to download and import RPM data, such as .glb files.
     /// </summary>
-    public class GLTFAvatarLoader : MonoBehaviour, IAvatarLoader
+    public class GLTFAvatarLoader : MonoBehaviour
     {
         #region Inspector Variables
         [SerializeField] RuntimeAnimatorController m_Controller;
@@ -46,14 +46,14 @@ namespace Inworld.Model.Sample
             Debug.LogError("GLTF Doesn't support streaming avatar. Please download to local files.");
             yield break;
         }
-        public GameObject LoadData(byte[] content)
-        {
-            return Importer.LoadFromBytes(content);
-        }
-        public GameObject LoadData(string fileName)
-        {
-            return Importer.LoadFromFile(fileName);
-        }
+        // public GameObject LoadData(byte[] content)
+        // {
+        //     return Importer.LoadFromBytes(content);
+        // }
+        // public GameObject LoadData(string fileName)
+        // {
+        //     return Importer.LoadFromFile(fileName);
+        // }
         #endregion
 
         #region Private Functions

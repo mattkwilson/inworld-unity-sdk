@@ -191,8 +191,8 @@ namespace Inworld.Audio
             }
             if (!IsAudioChunkAvailable(m_CurrentAudioChunk.PacketId))
                 return;
-            if (InworldController.Instance.CurrentCharacter != Character)
-                return;
+            // if (InworldController.Instance.CurrentCharacter != Character)
+            //     return;
             AudioClip audioClip = WavUtility.ToAudioClip(m_CurrentAudioChunk.Chunk.ToByteArray());
             if (audioClip)
             {
